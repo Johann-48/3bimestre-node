@@ -19,7 +19,7 @@ const errorHandler = (error, res) => {
   if (error.code === "P2002") {
     return res.status(409).json({
       error: "Conflito de dados únicos",
-      detail: error.meta?.target?.join(", "),
+      detail: Array.isArray(error.meta?.target) ? error.meta.target.join(", ") : error.meta?.target || "Campo único duplicado",
     });
   }
 
