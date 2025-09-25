@@ -101,6 +101,48 @@ app.get("/users", async (_req, res) => {
   }
 });
 
+// PUT /users/:id - Atualiza informações do usuário
+app.put("/users/:id", async (req, res) => {
+  try {
+    const userId = Number(req.params.id);
+    const { name, email, password } = req.body;
+
+    // Verifica se o usuário existe
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+
+    // Se email foi fornecido, valida o formato
+    if (email && !/^\S+@\S+\.\S+$/.test(email)) {
+      return res.status(400).json({ error: "Email em formato inválido" });
+    }
+
+    // Atualiza o usuário com os campos fornecidos
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        name: name || undefined,
+        email: email || undefined,
+        password: password || undefined,
+      },
+    });
+
+    res.json(updatedUser);
+  } catch (error) {
+    if (error.code === "P2002") {
+      return res.status(409).json({
+        error: "E-mail já cadastrado",
+        detail: error.meta || error.message,
+      });
+    }
+    errorHandler(error, res);
+  }
+});
+
 // DELETE /users/:id - Remove um usuário e seus dados relacionados
 app.delete("/users/:id", async (req, res) => {
   try {
