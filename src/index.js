@@ -128,6 +128,36 @@ app.delete("/users/:id", async (req, res) => {
 
 // ======= Rotas de Lojas =======
 
+// GET /stores - Listar todas as lojas
+app.get("/stores", async (_req, res) => {
+  try {
+    const stores = await prisma.store.findMany({
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        },
+        products: {
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    res.json(stores);
+  } catch (error) {
+    errorHandler(error, res);
+  }
+});
+
 // POST /stores - Criar uma nova loja
 // Body esperado: { name, userId }
 app.post("/stores", async (req, res) => {
